@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+
+    <!-- Import Apache CXF Bean Definition -->
+    <import resource="classpath:META-INF/cxf/cxf.xml"/>
+    <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml"/>
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
+
+    <!-- SurveyService -->
+    <bean id="YssWebService" class="com.yss.cnotf.services.yssWebServiceImpl"></bean>
+
+    <!-- Expose SurveyWebService  http://localhost:8080/sbcw_cxf/web_bank_transaction?wsdl-->
+    <jaxws:server id="WebYssWebService" serviceClass="com.yss.cnotf.services.yssWebServiceI" address="/yss_web_service">
+        <jaxws:serviceBean>
+            <ref bean="YssWebService"/> <!-- 要暴露的 bean 的引用 -->
+        </jaxws:serviceBean>
+    </jaxws:server>
+</beans>

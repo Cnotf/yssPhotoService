@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="yssService">
+    <output-path>$PROJECT_DIR$/out/artifacts/yssService</output-path>
+    <root id="archive" name="yssService.war">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="yssService" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
