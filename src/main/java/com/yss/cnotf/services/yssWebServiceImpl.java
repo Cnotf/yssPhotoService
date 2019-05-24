@@ -1,11 +1,6 @@
 package com.yss.cnotf.services;
 
 import javax.jws.WebService;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * @Author: cnotf
@@ -28,12 +23,14 @@ public class yssWebServiceImpl implements yssWebServiceI {
      * @return
      */
     @Override
-    public String getBiDate(String startPhotoDate, String endPhotoDate, String startAccountDate, String endAccountDate) {
-        //添加服务端处理流程
-        String dataadd=startPhotoDate+"|"+endPhotoDate+"|"+startAccountDate+"|"+startAccountDate;
+    public String getBiDate(String startPhotoDate, String endPhotoDate,
+                            String startAccountDate, String endAccountDate,
+                            String biName) {
+        String paraAdd = startPhotoDate+"|"+endPhotoDate+"|"+startAccountDate+"|"+startAccountDate;
+        String tablename = biName;
         String returnFlag = "1";
         try {
-            insertintoDataofMysql(dataadd);
+            BiDateService.biService(paraAdd, tablename);
         } catch (Exception e) {
             returnFlag = "2";
             e.printStackTrace();
@@ -50,86 +47,15 @@ public class yssWebServiceImpl implements yssWebServiceI {
      */
     @Override
     public String getHandDate(String beginHandDate, String endHandDate) {
-        //添加服务端处理流程
-        String dataadd=beginHandDate+"|"+endHandDate;
+        String paraAdd = beginHandDate+"|"+endHandDate;
         String returnFlag = "1";
         try {
-            insertintoDataofMysql(dataadd);
+            HandDateService.handService(paraAdd);
         } catch (Exception e) {
             returnFlag = "2";
             e.printStackTrace();
         }
         return returnFlag;
-    }
-
-    public void insertintoDataofMysql(String dataadd) throws Exception {
-        Connection conn = DBUtils.newConnection("MYSQL","10.7.53.28","3306","mpetl","mpetl","mpetl");
-        DelData(conn,dataadd);
-
-    }
-
-    private void DelData(Connection conn,String dataadd) throws Exception {
-        Date date = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        String utilDate = sdf.format(date).toString();
-        int delflag = dataadd.split("|").length;
-        PreparedStatement stat = null;
-        PreparedStatement stat1 = null;
-        if (delflag == 2){
-            stat = conn.prepareStatement("DELETE FROM  ETL_WEBSERVICE_DATA WHERE DATA_SOURCE1= '" + dataadd + "' AND DATA_DT='" + utilDate + "' AND SOURCE_FLAG='A';");
-            try {
-                stat.execute();
-            }  catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                if (stat != null) {
-                    stat.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            }
-            stat1 = conn.prepareStatement("INSERT INTO ETL_WEBSERVICE_DATA VALUES ('"+utilDate+"','"+dataadd+"','','A','0','','')");
-            try {
-                stat1.execute();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                stat1.close();
-            }
-            }
-         else{
-            try {
-                stat = conn.prepareStatement("DELETE FROM  ETL_WEBSERVICE_DATA WHERE DATA_SOURCE2= '"+dataadd+"' AND DATA_DT='"+utilDate+"' AND SOURCE_FLAG='B';");
-                stat.execute();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                if (stat != null) {
-                    stat.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            }
-            try {
-                stat1 = conn.prepareStatement("INSERT INTO ETL_WEBSERVICE_DATA VALUES ('"+utilDate+"','','"+dataadd+"','B','0','','')");
-                stat1.execute();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            } finally {
-                if (stat1 != null) {
-                    stat1.close();
-                }
-                if (conn != null) {
-                    conn.close();
-                }
-            }
-        }
-
-
-
-
     }
 }
 

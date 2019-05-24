@@ -15,7 +15,7 @@ import javax.jws.WebService;
 public interface yssWebServiceI {
 
     @WebMethod
-    public String getBiDate(String startPhotoDate, String endPhotoDate, String startAccountDate, String endAccountDate);
+    public String getBiDate(String startPhotoDate, String endPhotoDate, String startAccountDate, String endAccountDate, String biName);
 
     @WebMethod
     public String getHandDate(String beginHandDate, String endHandDate);
