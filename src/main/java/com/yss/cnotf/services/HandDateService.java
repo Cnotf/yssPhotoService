@@ -15,7 +15,7 @@ public class HandDateService {
     }
 
     private void insertIntoDataofMysql(String paraAdd) throws Exception {
-        Connection conn = DBUtils.newConnection("MYSQL","10.7.53.28","3306","mpetl","mpetl","mpetl");
+        Connection conn = DBUtils.mysqlConnection("MYSQL","10.7.53.28","3306","mpetl","mpetl","mpetl");
         deleteHandData(conn,paraAdd);
         insertIntoHandTable(conn,paraAdd);
         conn.close();

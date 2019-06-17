@@ -2,6 +2,8 @@ package com.yss.cnotf.services;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: cnotf
@@ -15,8 +17,14 @@ import javax.jws.WebService;
 public interface yssWebServiceI {
 
     @WebMethod
-    public String getBiDate(String startPhotoDate, String endPhotoDate, String startAccountDate, String endAccountDate, String biName);
+    public String getBiDate(BiDateInfo biDateInfo);
 
     @WebMethod
-    public String getHandDate(String beginHandDate, String endHandDate);
+    public String getHandDate(HandDateInfo handDateInfo);
+
+    @WebMethod
+    public String saveTrusteeFeeData(TrusteeFeeInfo trusteeFeeInfo);
+
+    @WebMethod
+    public List<Map<String, Object>> queryTrusteeFeeData();
 }
