@@ -9,6 +9,8 @@ import java.math.BigDecimal;
  */
 public class TrusteeFeeInfo {
 
+
+    private Long id;
     /**
      * 投资组合代码
      */
@@ -47,6 +49,15 @@ public class TrusteeFeeInfo {
      * 是否关联
      */
     private String isRltv;
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getIntGrpCd() {
         return intGrpCd;

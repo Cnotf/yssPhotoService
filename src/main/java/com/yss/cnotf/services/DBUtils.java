@@ -11,11 +11,11 @@ import java.sql.SQLException;
  */
 public class DBUtils {
 
-    public static Connection mysqlConnection(String dbtype,String dbHost,String dbPort,String dbInstranse,String dbUser,String dbPassword){
+    public static Connection getConnection(String driver,String url, String username, String password){
         Connection conn = null ;
         try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            conn = DriverManager.getConnection("jdbc:mysql://"+dbHost+":"+dbPort+"/"+dbInstranse,dbUser,dbPassword);
+            Class.forName(driver).newInstance();
+            conn = DriverManager.getConnection(url, username, password);
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -28,20 +28,4 @@ public class DBUtils {
         return conn;
     }
 
-    public static Connection hiveConnection(String dbtype,String dbHost,String dbPort,String dbInstranse,String dbUser,String dbPassword){
-        Connection conn = null ;
-        try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            conn = DriverManager.getConnection("jdbc:mysql://"+dbHost+":"+dbPort+"/"+dbInstranse,dbUser,dbPassword);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return conn;
-    }
 }

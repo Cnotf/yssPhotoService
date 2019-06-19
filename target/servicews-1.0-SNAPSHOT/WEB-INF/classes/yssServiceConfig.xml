@@ -12,12 +12,22 @@ http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
 
     <!-- SurveyService -->
-    <bean id="YssWebService" class="com.yss.cnotf.services.yssWebServiceImpl"></bean>
+    <bean id="yssWebService" class="com.yss.cnotf.services.YssWebServiceImpl"></bean>
+    <bean id="yssQueryService" class="com.yss.cnotf.services.YssQueryServiceImpl"></bean>
 
     <!-- Expose SurveyWebService  http://localhost:8080/sbcw_cxf/web_bank_transaction?wsdl-->
-    <jaxws:server id="WebYssWebService" serviceClass="com.yss.cnotf.services.yssWebServiceI" address="/yss_web_service">
+
+    <!--保存业务-->
+    <jaxws:server id="webYssWebService" serviceClass="com.yss.cnotf.services.YssWebServiceI" address="/yss_save_service">
         <jaxws:serviceBean>
-            <ref bean="YssWebService"/> <!-- 要暴露的 bean 的引用 -->
+            <ref bean="yssWebService"/> <!-- 要暴露的 bean 的引用 -->
+        </jaxws:serviceBean>
+    </jaxws:server>
+
+    <!--查询业务-->
+    <jaxws:server id="queryYssWebService" serviceClass="com.yss.cnotf.services.YssQueryServiceI" address="/yss_query_service">
+        <jaxws:serviceBean>
+            <ref bean="yssQueryService"/> <!-- 要暴露的 bean 的引用 -->
         </jaxws:serviceBean>
     </jaxws:server>
 </beans>

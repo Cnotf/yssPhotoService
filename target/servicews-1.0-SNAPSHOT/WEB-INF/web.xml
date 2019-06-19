@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
-    <display-name>gdsbcw-cxf</display-name>
+    <display-name>yss-cxf</display-name>
 
     <!-- 在启动Web项目时,容器(比如Tomcat)会读web.xml配置 将参数名和参数值以键值对的形式加载到容器-->
     <context-param>

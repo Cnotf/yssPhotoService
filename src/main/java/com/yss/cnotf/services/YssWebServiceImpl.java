@@ -2,7 +2,6 @@ package com.yss.cnotf.services;
 
 import javax.jws.WebService;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Author: cnotf
@@ -10,11 +9,11 @@ import java.util.Map;
  * @Date: Create in 11:00 2019/04/30
  */
 @WebService(
-        endpointInterface = "com.yss.cnotf.services.yssWebServiceI",
+        endpointInterface = "com.yss.cnotf.services.YssWebServiceI",
         portName = "yssWebServiceWSPort",
         serviceName = "yssWebServiceWSService",
-        targetNamespace = "http://com.yss.hello.service")
-public class yssWebServiceImpl implements yssWebServiceI {
+        targetNamespace = "http://services.cnotf.yss.com")
+public class YssWebServiceImpl implements YssWebServiceI {
 
     /**
      * 接受报表拍照参数，并处理
@@ -22,7 +21,7 @@ public class yssWebServiceImpl implements yssWebServiceI {
      * @return
      */
     @Override
-    public String getBiDate(BiDateInfo biDateInfo) {
+    public String saveBiDate(BiDateInfo biDateInfo) {
         //参数都不会为空 省略判断的步骤
         String paraAdd = biDateInfo.getStartPhotoDate()+"|"+biDateInfo.getEndPhotoDate()
                 +"|"+biDateInfo.getStartAccountDate()+"|"+biDateInfo.getStartAccountDate();
@@ -45,7 +44,7 @@ public class yssWebServiceImpl implements yssWebServiceI {
      * @return
      */
     @Override
-    public String getHandDate(HandDateInfo handDateInfo) {
+    public String saveHandDate(HandDateInfo handDateInfo) {
         //参数都不会为空 省略判断的步骤
         String paraAdd = handDateInfo.getBeginHandDate()+"|"+handDateInfo.getEndHandDate();
         System.out.println("手工拍照："+paraAdd);
@@ -65,7 +64,7 @@ public class yssWebServiceImpl implements yssWebServiceI {
      * @return
      */
     @Override
-    public String saveTrusteeFeeData(TrusteeFeeInfo trusteeFeeInfo) {
+    public String saveTrusteeFeeData(List<TrusteeFeeInfo> trusteeFeeInfo) {
         String returnFlag = "1";
         try {
             TrusteeService.trusteeService(trusteeFeeInfo);
@@ -75,20 +74,7 @@ public class yssWebServiceImpl implements yssWebServiceI {
         }
         return returnFlag;
     }
-    /**
-     * 查询托管费信息
-     * @return
-     */
-    @Override
-    public List<Map<String, Object>>  queryTrusteeFeeData() {
-        List<Map<String, Object>> listMap= null;
-        try {
-            listMap = TrusteeService.queryTrusteeData();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return listMap;
-    }
+
 }
 
 
