@@ -109,8 +109,7 @@ public class TrusteeService {
         //重新插入数据
         TrusteeFeeInfo feeInfo = new TrusteeFeeInfo();
         feeInfo.setIsRltv("1");
-        TrusteeService trusteeService = new TrusteeService();
-        List<TrusteeFeeInfo> trusteeFeeInfos = trusteeService.queryTrusteeFeeTable(feeInfo, 1);
+        List<TrusteeFeeInfo> trusteeFeeInfos = queryTrusteeFeeTable(feeInfo, 1);
         insertDataToHive(connHive,trusteeFeeInfos);
         connHive.close();
     }
@@ -172,7 +171,7 @@ public class TrusteeService {
     private void insertDataToHive (Connection conn, List<TrusteeFeeInfo> trusteeFeeInfo) throws Exception{
         conn.setAutoCommit(false);
 
-        String sqlStr = "INSERT INTO TABLE mdata.M01_MNUL_RLTV_TSFE_DATA "
+        String sqlStr = "INSERT INTO TABLE mdata.M01_MNUL_RLTV_TSFE_DATA_TMP "
               //  + "PARTITION (yyyy=?,mm=?,dd=?)"
                 + " VALUES (?,?,?,?,?,?,'4','1')";
         PreparedStatement stat = conn.prepareStatement(sqlStr);
