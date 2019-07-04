@@ -1,6 +1,9 @@
 package com.yss.cnotf.services;
 
-import java.sql.*;
+import com.yss.cnotf.util.PropertiesUtil;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 
 /**
  * @Author: cnotf
@@ -15,7 +18,9 @@ public class BiDateService {
     }
 
     private void insertIntoDataofMysql(String paraAdd, String tablename) throws Exception {
-        Connection conn = DBUtils.getConnection("com.mysql.jdbc.Driver", "jdbc:mysql://10.7.53.28:3306/mpetl", "mpetl", "mpetl");
+        PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
+        Connection conn = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
+//        Connection conn = DBUtils.getConnection("com.mysql.jdbc.Driver", "jdbc:mysql://10.7.53.28:3306/mpetl", "mpetl", "mpetl");
         deleteBiData(conn,paraAdd,tablename);
         insertIntoBiTable(conn,paraAdd,tablename);
         conn.close();

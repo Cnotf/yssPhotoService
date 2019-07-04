@@ -1,8 +1,12 @@
 package com.yss.cnotf.services;
 
 import com.yss.cnotf.util.PropertiesUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
 
@@ -12,6 +16,9 @@ import java.util.*;
  * @Date: Create in 13:43 2019/06/17
  */
 public class TrusteeService {
+
+
+    private final static Logger logger = LoggerFactory.getLogger(TrusteeService.class);
 
     /**
      * 该类提供的查询的静态入口方法
@@ -43,7 +50,7 @@ public class TrusteeService {
      * @throws Exception
      */
     private List<TrusteeFeeInfo> queryTrusteeFeeTable (TrusteeFeeInfo trusteeFee, int queryType) throws Exception{
-        PropertiesUtil propertiesUtil = new PropertiesUtil("ipport.properties");
+        PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
         Connection conn = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
         List<TrusteeFeeInfo> rsList = new ArrayList<TrusteeFeeInfo>();
         PreparedStatement stat = null;
@@ -60,7 +67,7 @@ public class TrusteeService {
             // 取得数据库的列名
             while (rs.next()) {
                 TrusteeFeeInfo trusteeFeeInfo = new TrusteeFeeInfo();
-                trusteeFeeInfo.setId((Long) rs.getObject(7));
+                trusteeFeeInfo.setId((BigInteger) rs.getObject(7));
                 trusteeFeeInfo.setPymDt((String) rs.getObject(1));
                 trusteeFeeInfo.setIntGrpCd((String) rs.getObject(2));
                 trusteeFeeInfo.setPymAccNo((String) rs.getObject(3));
@@ -98,12 +105,14 @@ public class TrusteeService {
      * @throws Exception
      */
     private void insertIntoData(List<TrusteeFeeInfo> trusteeFeeInfo) throws Exception {
-        PropertiesUtil propertiesUtil = new PropertiesUtil("ipport.properties");
+        PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
         Connection connMysql = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
         //更新中间表 关联状态
         updateMySqlTable(connMysql,trusteeFeeInfo);
         connMysql.close();
-        //删除hive中 手工托管费关联表 //重新插入数据
+        //对hive数据库操作由jdbc改为sh脚本操作
+        executeSH();
+        /*//删除hive中 手工托管费关联表 //重新插入数据
         Connection connHive = DBUtils.getConnection(propertiesUtil.readProperty("hiveDriver"), propertiesUtil.readProperty("hiveUrl"), propertiesUtil.readProperty("hiveUsername"), propertiesUtil.readProperty("hivePassword"));
         deleteData4Hive(connHive);
         //重新插入数据
@@ -111,7 +120,35 @@ public class TrusteeService {
         feeInfo.setIsRltv("1");
         List<TrusteeFeeInfo> trusteeFeeInfos = queryTrusteeFeeTable(feeInfo, 1);
         insertDataToHive(connHive,trusteeFeeInfos);
-        connHive.close();
+        connHive.close();*/
+    }
+
+    private List<String> executeSH()  throws Exception {
+        List<String> stringList = new ArrayList<>();
+        PropertiesUtil propertiesUtil = new PropertiesUtil("shellpath.properties");
+        //可以执行脚本
+        String command = propertiesUtil.readProperty("shellpath");
+        logger.info("脚本路径：" + command);
+        //可以执行带参数的脚本
+//        String[] command = {"/usr/local/RPFiles/transStr.sh", "test"};
+        Process ps = Runtime.getRuntime().exec(command);
+        int exitValue = ps.waitFor();
+        //当返回值为0时表示执行成功
+        if (0 != exitValue){
+            logger.info("call shell failed. error code is :" + exitValue);
+        }
+        //只能接收脚本echo打印的数据，并且是echo打印的最后一次数据，如果想打印所有数据，可以参考本篇文章的脚本编写
+        BufferedInputStream in = new BufferedInputStream(ps.getInputStream());
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        String line;
+        while ((line = br.readLine()) != null) {
+            logger.info("脚本返回的数据如下： " + line);
+            stringList.add(line);
+        }
+        in.close();
+        br.close();
+        return stringList;
+
     }
 
 
@@ -155,7 +192,7 @@ public class TrusteeService {
             conn.setAutoCommit(false);
             //删除hive表中数据
             Statement statement = conn.createStatement();
-            statement.execute("truncate table mdata.M01_MNUL_RLTV_TSFE_DATA");
+            statement.execute("truncate table mdata.M01_MNUL_RLTV_TSFE_DATA_TMP");
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();

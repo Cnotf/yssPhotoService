@@ -56,24 +56,24 @@
 
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <!--大数据平台的mysql 驱动-->
-        <!--<dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.32</version>
-        </dependency>-->
-        <!--我自己的 mysql8.0驱动包-->
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.11</version>
         </dependency>
+        <!--我自己的 mysql8.0驱动包-->
+        <!--<dependency>-->
+            <!--<groupId>mysql</groupId>-->
+            <!--<artifactId>mysql-connector-java</artifactId>-->
+            <!--<version>8.0.11</version>-->
+        <!--</dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.apache.hive/hive-jdbc -->
-        <dependency>
+        <!--<dependency>
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-jdbc</artifactId>
             <version>1.2.1</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>org.slf4j</groupId>

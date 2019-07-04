@@ -7,7 +7,7 @@ package com.yss.cnotf.util;
  */
 public class Test {
     public static void main(String[] args) {
-        PropertiesUtil propertiesUtil = new PropertiesUtil("ipport.properties");
+        PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
         String address = propertiesUtil.readProperty("queryaddress");
         System.out.println(address);
     }

@@ -24,7 +24,7 @@ public class YssWebServiceImpl implements YssWebServiceI {
     public String saveBiDate(BiDateInfo biDateInfo) {
         //参数都不会为空 省略判断的步骤
         String paraAdd = biDateInfo.getStartPhotoDate()+"|"+biDateInfo.getEndPhotoDate()
-                +"|"+biDateInfo.getStartAccountDate()+"|"+biDateInfo.getStartAccountDate();
+                +"|"+biDateInfo.getStartAccountDate()+"|"+biDateInfo.getEndAccountDate();
         String tablename = biDateInfo.getBiName();
         System.out.println("报表拍照：" + paraAdd+"=="+tablename);
         String returnFlag = "1";

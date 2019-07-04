@@ -1,5 +1,7 @@
 package com.yss.cnotf.services;
 
+import com.yss.cnotf.util.PropertiesUtil;
+
 import java.sql.*;
 
 /**
@@ -15,7 +17,9 @@ public class HandDateService {
     }
 
     private void insertIntoDataofMysql(String paraAdd) throws Exception {
-        Connection conn = DBUtils.getConnection("com.mysql.jdbc.Driver", "jdbc:mysql://10.7.53.28:3306/mpetl", "mpetl", "mpetl");
+        PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
+        Connection conn = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
+//        Connection conn = DBUtils.getConnection("com.mysql.jdbc.Driver", "jdbc:mysql://10.7.53.28:3306/mpetl", "mpetl", "mpetl");
         deleteHandData(conn,paraAdd);
         insertIntoHandTable(conn,paraAdd);
         conn.close();
