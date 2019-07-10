@@ -1,12 +1,11 @@
 package com.yss.cnotf.services;
 
 import com.yss.cnotf.util.PropertiesUtil;
+import com.yss.cnotf.util.ResultToBeanUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
 
@@ -53,47 +52,19 @@ public class TrusteeService {
         PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
         Connection conn = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
         List<TrusteeFeeInfo> rsList = new ArrayList<TrusteeFeeInfo>();
-        PreparedStatement stat = null;
-        ResultSet rs = null;
         String queryStr = "select Pym_Dt,Int_Grp_cd,Pym_Acc_No,Int_Grp_Nm,Amt,Rcpt_Acc_No,id,Is_Rltv from  m01_mnul_rltv_tsfe_data where Is_Rltv = '"+ trusteeFee.getIsRltv() + "' ";
         if (queryType == 0) {
             queryStr = queryStr +"limit 0,50";
         }
-
-        try {
-            stat = conn.prepareStatement(queryStr);
-            rs = stat.executeQuery();
-            conn.setAutoCommit(false);
-            // 取得数据库的列名
-            while (rs.next()) {
-                TrusteeFeeInfo trusteeFeeInfo = new TrusteeFeeInfo();
-                trusteeFeeInfo.setId((BigInteger) rs.getObject(7));
-                trusteeFeeInfo.setPymDt((String) rs.getObject(1));
-                trusteeFeeInfo.setIntGrpCd((String) rs.getObject(2));
-                trusteeFeeInfo.setPymAccNo((String) rs.getObject(3));
-                trusteeFeeInfo.setIntGrpNm((String) rs.getObject(4));
-                trusteeFeeInfo.setAmt((BigDecimal) rs.getObject(5));
-                trusteeFeeInfo.setRcptAccNo((String) rs.getObject(6));
-                trusteeFeeInfo.setIsRltv((String) rs.getObject(8));
-                rsList.add(trusteeFeeInfo);
-            }
-            conn.commit();
+        try (PreparedStatement stat = conn.prepareStatement(queryStr);
+             ResultSet rs = stat.executeQuery()){
+            //通过反射给bean赋值
+            ResultToBeanUtil<TrusteeFeeInfo> handDateInfoResultToBeanUtil = new ResultToBeanUtil<TrusteeFeeInfo>();
+            rsList = handDateInfoResultToBeanUtil.getList(TrusteeFeeInfo.class, rs);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (rs != null){
-                    rs.close();
-                }
-                if (stat != null){
-                    stat.close();
-                }
-                if (conn != null){
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            conn.close();
 
         }
         return rsList;
@@ -109,9 +80,11 @@ public class TrusteeService {
         Connection connMysql = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
         //更新中间表 关联状态
         updateMySqlTable(connMysql,trusteeFeeInfo);
-        connMysql.close();
         //对hive数据库操作由jdbc改为sh脚本操作
         executeSH();
+        //更新状态通知大数据监控
+        updateFlag(connMysql);
+        connMysql.close();
         /*//删除hive中 手工托管费关联表 //重新插入数据
         Connection connHive = DBUtils.getConnection(propertiesUtil.readProperty("hiveDriver"), propertiesUtil.readProperty("hiveUrl"), propertiesUtil.readProperty("hiveUsername"), propertiesUtil.readProperty("hivePassword"));
         deleteData4Hive(connHive);
@@ -152,6 +125,25 @@ public class TrusteeService {
     }
 
 
+    /**
+     * 更新通知状态
+     * @param conn
+     * @throws Exception
+     */
+    private void updateFlag(Connection conn)  throws Exception{
+        String sqlStr = "update ETL_HIVEDATA_FLAG set FLAG = '1'";
+        Statement stat = conn.createStatement();
+        conn.setAutoCommit(false);
+        try {
+            stat.executeUpdate(sqlStr);
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception();
+        }finally {
+            stat.close();
+        }
+    }
     /**
      * 更新mysql数据库 中间过渡表
      * @param conn

@@ -19,7 +19,7 @@ public interface YssWebServiceI {
     public String saveBiDate(BiDateInfo biDateInfo);
 
     @WebMethod
-    public String saveHandDate(HandDateInfo handDateInfo);
+    public String saveHandDate(List<HandDateInfo> handDateInfoList, String photoType);
 
     @WebMethod
     public String saveTrusteeFeeData(List<TrusteeFeeInfo> trusteeFeeInfo);

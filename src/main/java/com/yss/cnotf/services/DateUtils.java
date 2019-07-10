@@ -8,7 +8,7 @@ import java.util.Date;
  * @Description:
  * @Date: Create in 16:31 2019/05/24
  */
-public class MyDateUtils {
+public class DateUtils {
 
     public static String getDateToString () {
         Date date = new Date();

@@ -1,5 +1,7 @@
 package com.yss.cnotf.services;
 
+import java.util.Date;
+
 /**
  * @Author: cnotf
  * @Description:
@@ -7,31 +9,86 @@ package com.yss.cnotf.services;
  */
 public class HandDateInfo {
 
-    private String beginHandDate;
+    private Long id;
 
-    private String endHandDate;
+    private String photoOperationDate;
 
-    public String getBeginHandDate() {
-        return beginHandDate;
+    private String photoDate;
+
+    private Date createDate;
+
+    private String photoStatus;
+
+    private String deleteFlag;
+
+    private String photoType;
+
+    public Long getId() {
+        return id;
     }
 
-    public void setBeginHandDate(String beginHandDate) {
-        this.beginHandDate = beginHandDate;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getEndHandDate() {
-        return endHandDate;
+    public String getPhotoOperationDate() {
+        return photoOperationDate;
     }
 
-    public void setEndHandDate(String endHandDate) {
-        this.endHandDate = endHandDate;
+    public void setPhotoOperationDate(String photoOperationDate) {
+        this.photoOperationDate = photoOperationDate;
+    }
+
+    public String getPhotoDate() {
+        return photoDate;
+    }
+
+    public void setPhotoDate(String photoDate) {
+        this.photoDate = photoDate;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public String getPhotoStatus() {
+        return photoStatus;
+    }
+
+    public void setPhotoStatus(String photoStatus) {
+        this.photoStatus = photoStatus;
+    }
+
+    public String getDeleteFlag() {
+        return deleteFlag;
+    }
+
+    public void setDeleteFlag(String deleteFlag) {
+        this.deleteFlag = deleteFlag;
+    }
+
+    public String getPhotoType() {
+        return photoType;
+    }
+
+    public void setPhotoType(String photoType) {
+        this.photoType = photoType;
     }
 
     @Override
     public String toString() {
         return "HandDateInfo{" +
-                "beginHandDate='" + beginHandDate + '\'' +
-                ", endHandDate='" + endHandDate + '\'' +
+                "id=" + id +
+                ", photoOperationDate='" + photoOperationDate + '\'' +
+                ", photoDate='" + photoDate + '\'' +
+                ", createDate=" + createDate +
+                ", photoStatus='" + photoStatus + '\'' +
+                ", deleteFlag='" + deleteFlag + '\'' +
+                ", photoType='" + photoType + '\'' +
                 '}';
     }
 }

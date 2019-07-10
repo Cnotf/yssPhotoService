@@ -21,4 +21,31 @@ public interface YssQueryServiceI {
      */
     @WebMethod
     public List<TrusteeFeeInfo> queryTrusteeFeeData(TrusteeFeeInfo trusteeFeeInfo);
+
+
+    /**
+     * 查询拍照信息
+     * @param handDateInfo
+     * @return
+     */
+    @WebMethod
+    public List<HandDateInfo> queryHandPhotoList(HandDateInfo handDateInfo);
+
+    /**
+     * 删除拍照信息
+     * @param handDateInfoList
+     * @return
+     */
+    @WebMethod
+    public Integer deleteHandPhotoData(List<HandDateInfo> handDateInfoList);
+
+    /**
+     * 保存拍照信息
+     * @param handDateInfoList
+     * @return
+     */
+    @WebMethod
+    public Integer saveHandPhotoData(List<HandDateInfo> handDateInfoList);
+
+
 }

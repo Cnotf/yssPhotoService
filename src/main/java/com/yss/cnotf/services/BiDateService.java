@@ -34,11 +34,9 @@ public class BiDateService {
      * @throws Exception
      */
     private void deleteBiData(Connection conn, String pataAdd, String tablename) throws Exception{
-        PreparedStatement stat = conn.prepareStatement("DELETE FROM  ETL_WEBSERVICE_DATA WHERE DATA_SOURCE2= '" + pataAdd + "' AND DATA_DT='" + MyDateUtils.getDateToString() + "' AND SOURCE_FLAG='B' and COLUMN1 = '" + tablename + "'");
-        try {
+        try (PreparedStatement stat =
+                     conn.prepareStatement("DELETE FROM  ETL_WEBSERVICE_DATA WHERE DATA_SOURCE2= '" + pataAdd + "' AND DATA_DT='" + DateUtils.getDateToString() + "' AND SOURCE_FLAG='B' and COLUMN1 = '" + tablename + "'")) {
             stat.execute();
-        } finally {
-            stat.close();
         }
     }
 
@@ -49,11 +47,10 @@ public class BiDateService {
      * @throws Exception
      */
     private void insertIntoBiTable (Connection conn, String pataAdd, String tablename) throws Exception{
-        PreparedStatement stat = conn.prepareStatement("INSERT INTO ETL_WEBSERVICE_DATA VALUES ('"+ MyDateUtils.getDateToString() + "','','" + pataAdd + "','B','0','" + tablename + "','')");
-        try {
+
+        try (PreparedStatement stat =
+                     conn.prepareStatement("INSERT INTO ETL_WEBSERVICE_DATA VALUES ('"+ DateUtils.getDateToString() + "','','" + pataAdd + "','B','0','" + tablename + "','')")){
             stat.execute();
-        } finally {
-            stat.close();
         }
     }
 }

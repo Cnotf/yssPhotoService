@@ -5,7 +5,7 @@ package com.yss.cnotf.services;
  * @Description:
  * @Date: Create in 11:05 2019/06/19
  */
-public class DataBaeConfigInfo {
+public class DataBaseConfigInfo {
 
     /**
      * 驱动
@@ -61,7 +61,7 @@ public class DataBaeConfigInfo {
 
     @Override
     public String toString() {
-        return "DataBaeConfigInfo{" +
+        return "DataBaseConfigInfo{" +
                 "driver='" + driver + '\'' +
                 ", url='" + url + '\'' +
                 ", username='" + username + '\'' +

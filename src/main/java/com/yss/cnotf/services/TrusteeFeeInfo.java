@@ -1,7 +1,6 @@
 package com.yss.cnotf.services;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 /**
  * @Author: cnotf
@@ -11,7 +10,7 @@ import java.math.BigInteger;
 public class TrusteeFeeInfo {
 
 
-    private BigInteger id;
+    private Long id;
     /**
      * 投资组合代码
      */
@@ -51,12 +50,11 @@ public class TrusteeFeeInfo {
      */
     private String isRltv;
 
-
-    public BigInteger getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(BigInteger id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

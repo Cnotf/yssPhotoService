@@ -29,4 +29,48 @@ public class YssQueryServiceImpl implements YssQueryServiceI {
         }
         return listMap;
     }
+
+
+    /**
+     * 查询拍照信息
+     * @param handDateInfo
+     * @return
+     */
+    @Override
+    public List<HandDateInfo> queryHandPhotoList(HandDateInfo handDateInfo){
+        List<HandDateInfo> listMap= null;
+        HandDateService handDateService = new HandDateService();
+        try {
+            listMap = handDateService.queryPhotoDataList(handDateInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listMap;
+    }
+
+    @Override
+    public Integer deleteHandPhotoData(List<HandDateInfo> handDateInfoList) {
+        HandDateService handDateService = new HandDateService();
+        Integer returnMsg = 0;
+        try {
+            handDateService.deleteHandPhotoData(handDateInfoList);
+            returnMsg = 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return returnMsg;
+    }
+
+    @Override
+    public Integer saveHandPhotoData(List<HandDateInfo> handDateInfoList) {
+        HandDateService handDateService = new HandDateService();
+        Integer returnMsg = 0;
+        try {
+            handDateService.savePhotoDataList(handDateInfoList);
+            returnMsg = 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return returnMsg;
+    }
 }

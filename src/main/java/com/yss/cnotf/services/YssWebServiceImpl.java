@@ -1,5 +1,8 @@
 package com.yss.cnotf.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.jws.WebService;
 import java.util.List;
 
@@ -15,6 +18,8 @@ import java.util.List;
         targetNamespace = "http://services.cnotf.yss.com")
 public class YssWebServiceImpl implements YssWebServiceI {
 
+
+    private final static Logger logger = LoggerFactory.getLogger(YssWebServiceImpl.class);
     /**
      * 接受报表拍照参数，并处理
      * @param biDateInfo
@@ -23,10 +28,20 @@ public class YssWebServiceImpl implements YssWebServiceI {
     @Override
     public String saveBiDate(BiDateInfo biDateInfo) {
         //参数都不会为空 省略判断的步骤
-        String paraAdd = biDateInfo.getStartPhotoDate()+"|"+biDateInfo.getEndPhotoDate()
-                +"|"+biDateInfo.getStartAccountDate()+"|"+biDateInfo.getEndAccountDate();
+        //如果是 基金产品托管情况 和 其他产品托管情况 报表的话 拼接8个字段 其他报表拼接四个字段
+        String paraAdd = "";
+        if ("Rpt03".equals(biDateInfo.getBiName()) || "Rpt04".equals(biDateInfo.getBiName()) ) {
+            paraAdd = biDateInfo.getStartYearPhotoDate()+"|"+biDateInfo.getStartYearAccDate()
+                    +"|"+biDateInfo.getQuarterPhotoDate()+"|"+biDateInfo.getQuarterAccDate()
+                    +"|"+biDateInfo.getLastQuarterPhotoDate()+"|"+biDateInfo.getLastQuarterAccDate()
+                    +"|"+biDateInfo.getLastYearPhotoDate()+"|"+biDateInfo.getLastYearAccDate();
+        } else {
+            paraAdd = biDateInfo.getStartPhotoDate()+"|"+biDateInfo.getEndPhotoDate()
+                    +"|"+biDateInfo.getStartAccountDate()+"|"+biDateInfo.getEndAccountDate();
+        }
         String tablename = biDateInfo.getBiName();
-        System.out.println("报表拍照：" + paraAdd+"=="+tablename);
+        logger.info("报表拍照参数=================：" + paraAdd+"=="+tablename);
+        System.out.println("报表拍照参数=================：" + paraAdd+"=="+tablename);
         String returnFlag = "1";
         try {
             BiDateService.biService(paraAdd, tablename);
@@ -40,17 +55,15 @@ public class YssWebServiceImpl implements YssWebServiceI {
 
     /**
      * 接受手工拍照参数，并处理
-     * @param handDateInfo
+     * @param handDateInfoList
      * @return
      */
     @Override
-    public String saveHandDate(HandDateInfo handDateInfo) {
-        //参数都不会为空 省略判断的步骤
-        String paraAdd = handDateInfo.getBeginHandDate()+"|"+handDateInfo.getEndHandDate();
-        System.out.println("手工拍照："+paraAdd);
+    public String saveHandDate(List<HandDateInfo> handDateInfoList, String photoType) {
+
         String returnFlag = "1";
         try {
-            HandDateService.handService(paraAdd);
+            HandDateService.handService(handDateInfoList, photoType);
         } catch (Exception e) {
             returnFlag = "2";
             e.printStackTrace();
