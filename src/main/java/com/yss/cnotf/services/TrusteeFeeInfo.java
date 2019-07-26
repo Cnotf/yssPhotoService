@@ -49,6 +49,42 @@ public class TrusteeFeeInfo {
      * 是否关联
      */
     private String isRltv;
+    /**
+     * 页数
+     */
+    private Integer page;
+    /**
+     * 每页条数
+     */
+    private Integer rows;
+    /**
+     * 总数
+     */
+    private Integer total;
+
+    public Integer getTotal() {
+        return total;
+    }
+
+    public void setTotal(Integer total) {
+        this.total = total;
+    }
+
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(Integer page) {
+        this.page = page;
+    }
+
+    public Integer getRows() {
+        return rows;
+    }
+
+    public void setRows(Integer rows) {
+        this.rows = rows;
+    }
 
     public Long getId() {
         return id;

@@ -31,6 +31,14 @@ public interface YssQueryServiceI {
     @WebMethod
     public List<HandDateInfo> queryHandPhotoList(HandDateInfo handDateInfo);
 
+
+    /**
+     * 查询报表信息
+     * @param biDateInfo
+     * @return
+     */
+    public List<BiDateInfo> queryBiList(BiDateInfo biDateInfo);
+
     /**
      * 删除拍照信息
      * @param handDateInfoList

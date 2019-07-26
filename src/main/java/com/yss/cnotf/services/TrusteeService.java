@@ -37,30 +37,32 @@ public class TrusteeService {
      */
     public static List<TrusteeFeeInfo>  queryTrusteeData(TrusteeFeeInfo trusteeFeeInfo) throws Exception{
         TrusteeService trusteeService = new TrusteeService();
-        return trusteeService.queryTrusteeFeeTable(trusteeFeeInfo,0);
+        return trusteeService.queryTrusteeFeeTable(trusteeFeeInfo);
     }
 
 
     /**
      * 查询mysql中托管数据
      * @param trusteeFee
-     * @param queryType =0时：为页面请求的查询 =1时：为插入hive提交查询所有is_rltv为1的数据
      * @return
      * @throws Exception
      */
-    private List<TrusteeFeeInfo> queryTrusteeFeeTable (TrusteeFeeInfo trusteeFee, int queryType) throws Exception{
+    private List<TrusteeFeeInfo> queryTrusteeFeeTable (TrusteeFeeInfo trusteeFee) throws Exception{
         PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
         Connection conn = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
         List<TrusteeFeeInfo> rsList = new ArrayList<TrusteeFeeInfo>();
-        String queryStr = "select Pym_Dt,Int_Grp_cd,Pym_Acc_No,Int_Grp_Nm,Amt,Rcpt_Acc_No,id,Is_Rltv from  m01_mnul_rltv_tsfe_data where Is_Rltv = '"+ trusteeFee.getIsRltv() + "' ";
-        if (queryType == 0) {
-            queryStr = queryStr +"limit 0,50";
-        }
-        try (PreparedStatement stat = conn.prepareStatement(queryStr);
+        String queryStr = "select Pym_Dt,Int_Grp_cd,Pym_Acc_No,Int_Grp_Nm,Amt,Rcpt_Acc_No,id,Is_Rltv from  m01_mnul_rltv_tsfe_data where 1=1 ";
+        StringBuilder stringBuilder = appendQueryCriteria(trusteeFee, queryStr);
+        String limitStr = " limit " + (trusteeFee.getPage()-1)*trusteeFee.getRows()+","+trusteeFee.getRows();
+        try (PreparedStatement stat = conn.prepareStatement(stringBuilder.toString() + limitStr);
              ResultSet rs = stat.executeQuery()){
             //通过反射给bean赋值
             ResultToBeanUtil<TrusteeFeeInfo> handDateInfoResultToBeanUtil = new ResultToBeanUtil<TrusteeFeeInfo>();
             rsList = handDateInfoResultToBeanUtil.getList(TrusteeFeeInfo.class, rs);
+            if (rsList != null && rsList.size() > 0) {
+                rsList.get(0).setTotal(queryTrusteeCount(conn, trusteeFee));
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -68,6 +70,59 @@ public class TrusteeService {
 
         }
         return rsList;
+    }
+
+    /**
+     * 查询mysql中维护的托管费数据 的总条数
+     * @param trusteeFee
+     * @return
+     * @throws Exception
+     */
+    public Integer queryTrusteeCount(Connection conn,TrusteeFeeInfo trusteeFee) throws Exception{
+        Integer count = 0;
+        String countStr = "select count(*) total from  m01_mnul_rltv_tsfe_data where 1=1 ";
+        StringBuilder stringBuilder = appendQueryCriteria(trusteeFee, countStr);
+        try (Statement stat = conn.createStatement();
+             ResultSet rs = stat.executeQuery(stringBuilder.toString())){
+            if (rs.first()){
+                count = rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    /**
+     * 拼接查询条件
+     * @param trusteeFee
+     * @param queryStr
+     * @return
+     */
+    private StringBuilder appendQueryCriteria(TrusteeFeeInfo trusteeFee,String queryStr) {
+        StringBuilder stringBuilder = new StringBuilder(queryStr);
+        if (trusteeFee.getIsRltv() != null && !"".equals(trusteeFee.getIsRltv())) {
+            stringBuilder.append("and Is_Rltv  = '" + trusteeFee.getIsRltv()).append("'");
+        }
+        if (trusteeFee.getIntGrpCd() != null && !"".equals(trusteeFee.getIntGrpCd())) {
+            stringBuilder.append("and Int_Grp_cd = '" + trusteeFee.getIntGrpCd()).append("'");
+        }
+        if (trusteeFee.getPymDt() != null && !"".equals(trusteeFee.getPymDt())) {
+            stringBuilder.append("and Pym_Dt = '" + trusteeFee.getPymDt()).append("'");
+        }
+        if (trusteeFee.getIntGrpNm() != null && !"".equals(trusteeFee.getIntGrpNm())) {
+            stringBuilder.append("and Int_Grp_Nm = '" + trusteeFee.getIntGrpNm()).append("'");
+        }
+        if (trusteeFee.getPymAccNo() != null && !"".equals(trusteeFee.getPymAccNo())) {
+            stringBuilder.append("and Pym_Acc_No = '" + trusteeFee.getPymAccNo()).append("'");
+        }
+        if (trusteeFee.getRcptAccNo() != null && !"".equals(trusteeFee.getRcptAccNo())) {
+            stringBuilder.append("and Rcpt_Acc_No = '" + trusteeFee.getRcptAccNo()).append("'");
+        }
+        if (trusteeFee.getId() != null && trusteeFee.getId() != 0L) {
+            stringBuilder.append("and id = '" + trusteeFee.getId()).append("'");
+        }
+        return stringBuilder;
     }
 
     /**
@@ -85,15 +140,6 @@ public class TrusteeService {
         //更新状态通知大数据监控
         updateFlag(connMysql);
         connMysql.close();
-        /*//删除hive中 手工托管费关联表 //重新插入数据
-        Connection connHive = DBUtils.getConnection(propertiesUtil.readProperty("hiveDriver"), propertiesUtil.readProperty("hiveUrl"), propertiesUtil.readProperty("hiveUsername"), propertiesUtil.readProperty("hivePassword"));
-        deleteData4Hive(connHive);
-        //重新插入数据
-        TrusteeFeeInfo feeInfo = new TrusteeFeeInfo();
-        feeInfo.setIsRltv("1");
-        List<TrusteeFeeInfo> trusteeFeeInfos = queryTrusteeFeeTable(feeInfo, 1);
-        insertDataToHive(connHive,trusteeFeeInfos);
-        connHive.close();*/
     }
 
     private List<String> executeSH()  throws Exception {

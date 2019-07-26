@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jws.WebService;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,12 +40,15 @@ public class YssWebServiceImpl implements YssWebServiceI {
             paraAdd = biDateInfo.getStartPhotoDate()+"|"+biDateInfo.getEndPhotoDate()
                     +"|"+biDateInfo.getStartAccountDate()+"|"+biDateInfo.getEndAccountDate();
         }
+        //去掉日期拼接符
+        paraAdd = paraAdd.replaceAll("-","");
         String tablename = biDateInfo.getBiName();
         logger.info("报表拍照参数=================：" + paraAdd+"=="+tablename);
-        System.out.println("报表拍照参数=================：" + paraAdd+"=="+tablename);
+        List<BiDateInfo> biDateInfos = new ArrayList<>();
+        biDateInfos.add(biDateInfo);
         String returnFlag = "1";
         try {
-            BiDateService.biService(paraAdd, tablename);
+            BiDateService.biService(paraAdd, tablename, biDateInfos);
         } catch (Exception e) {
             returnFlag = "2";
             e.printStackTrace();

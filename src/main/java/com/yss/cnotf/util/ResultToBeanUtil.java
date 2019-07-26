@@ -79,9 +79,7 @@ public class ResultToBeanUtil<T> {
                         //首字母大写 并用set拼接
                         String setMethodName = "set"
                                 + StringUtils.captureName(field.getName());
-                        // 第一个参数是传进去的方法名称，第二个参数是 传进去的类型；
                         Method m = t.getClass().getMethod(setMethodName, beanType);
-                        // 第二个参数是传给set方法数据；如果是get方法可以不写
                         m.invoke(t, value);
                     } else {
                         continue;

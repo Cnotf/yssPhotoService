@@ -1,5 +1,7 @@
 package com.yss.cnotf.services;
 
+import java.util.Date;
+
 /**
  * @Author: cnotf
  * @Description:
@@ -11,11 +13,15 @@ public class BiDateInfo {
 
     private String endPhotoDate;
 
+    private Date createDate;
+
     private String startAccountDate;
 
     private String endAccountDate;
 
     private String biName;
+
+    private String operate;
 
     private String startYearPhotoDate;
 
@@ -32,6 +38,26 @@ public class BiDateInfo {
     private String lastYearPhotoDate;
 
     private String lastYearAccDate;
+
+    private Integer page;
+    private Integer rows;
+    private Integer total;
+
+    public String getOperate() {
+        return operate;
+    }
+
+    public void setOperate(String operate) {
+        this.operate = operate;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
 
     public String getStartPhotoDate() {
         return startPhotoDate;
@@ -137,14 +163,40 @@ public class BiDateInfo {
         this.lastYearAccDate = lastYearAccDate;
     }
 
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(Integer page) {
+        this.page = page;
+    }
+
+    public Integer getRows() {
+        return rows;
+    }
+
+    public void setRows(Integer rows) {
+        this.rows = rows;
+    }
+
+    public Integer getTotal() {
+        return total;
+    }
+
+    public void setTotal(Integer total) {
+        this.total = total;
+    }
+
     @Override
     public String toString() {
         return "BiDateInfo{" +
                 "startPhotoDate='" + startPhotoDate + '\'' +
                 ", endPhotoDate='" + endPhotoDate + '\'' +
+                ", createDate=" + createDate +
                 ", startAccountDate='" + startAccountDate + '\'' +
                 ", endAccountDate='" + endAccountDate + '\'' +
                 ", biName='" + biName + '\'' +
+                ", operate='" + operate + '\'' +
                 ", startYearPhotoDate='" + startYearPhotoDate + '\'' +
                 ", startYearAccDate='" + startYearAccDate + '\'' +
                 ", quarterPhotoDate='" + quarterPhotoDate + '\'' +

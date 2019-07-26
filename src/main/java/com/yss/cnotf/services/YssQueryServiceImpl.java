@@ -48,6 +48,24 @@ public class YssQueryServiceImpl implements YssQueryServiceI {
         return listMap;
     }
 
+
+    /**
+     * 查询报表信息
+     * @param biDateInfo
+     * @return
+     */
+    @Override
+    public List<BiDateInfo> queryBiList(BiDateInfo biDateInfo){
+        List<BiDateInfo> listMap= null;
+        BiDateService biDateService = new BiDateService();
+        try {
+            listMap = biDateService.queryBiDataList(biDateInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return listMap;
+    }
+
     @Override
     public Integer deleteHandPhotoData(List<HandDateInfo> handDateInfoList) {
         HandDateService handDateService = new HandDateService();
@@ -73,4 +91,5 @@ public class YssQueryServiceImpl implements YssQueryServiceI {
         }
         return returnMsg;
     }
+
 }

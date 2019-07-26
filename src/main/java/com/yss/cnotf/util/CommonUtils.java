@@ -55,6 +55,6 @@ public class CommonUtils {
     }
 
     public static void main(String[] args) {
-        System.out.println(dateToString("yyyy-MM-dd",getAnyDayDate(new Date(), Calendar.DAY_OF_MONTH, -1)));
+        System.out.println(CommonUtils.dateToString("yyyy-MM-dd", new Date()));
     }
 }

@@ -37,15 +37,16 @@ public class HandDateService {
         PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
         try (Connection conn = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"))){
             HandDateInfo handDateInfo = new HandDateInfo();
-            //获取昨天日期字符串 由于定时任务为凌晨跑，需要获取前一天日期
-            String yesterdayDateStr = CommonUtils.dateToString("yyyy-MM-dd", CommonUtils.getAnyDayDate(new Date(), Calendar.DAY_OF_MONTH, -1));
+            //获取当天日期
+            String yesterdayDateStr = CommonUtils.dateToString("yyyy-MM-dd", new Date());
             handDateInfo.setPhotoOperationDate(yesterdayDateStr);
             handDateInfo.setPhotoStatus("0");
             List<HandDateInfo> handDateInfos = queryPhotoDataList(handDateInfo);
             for (HandDateInfo handDateInfo1 : handDateInfos) {
                 String paraAdd = handDateInfo1.getPhotoOperationDate()+"|"+handDateInfo1.getPhotoDate();
+                //去掉日期拼接符
+                paraAdd = paraAdd.replaceAll("-","");
                 logger.info("自动拍照参数=============："+paraAdd);
-                System.out.println("自动拍照参数=============："+paraAdd);
                 deleteHandData(conn,paraAdd);
                 insertIntoHandTable(conn,paraAdd);
                 updatePhotoDataStatus(conn,handDateInfo1,photoType);
@@ -67,8 +68,9 @@ public class HandDateService {
             }
             for (HandDateInfo handDateInfo : handDateInfoList) {
                 String paraAdd = handDateInfo.getPhotoOperationDate()+"|"+handDateInfo.getPhotoDate();
+                //去掉日期拼接符
+                paraAdd = paraAdd.replaceAll("-","");
                 logger.info("手动拍照参数=============："+paraAdd);
-                System.out.println("手动拍照参数=============："+paraAdd);
                 deleteHandData(conn,paraAdd);
                 insertIntoHandTable(conn,paraAdd);
                 updatePhotoDataStatus(conn,handDateInfo,photoType);
@@ -84,8 +86,9 @@ public class HandDateService {
      * @throws Exception
      */
     private void deleteHandData(Connection conn, String pataAdd) throws Exception{
+        PropertiesUtil propertiesUtil = new PropertiesUtil("job.properties");
         try (PreparedStatement stat =
-                     conn.prepareStatement("DELETE FROM  ETL_WEBSERVICE_DATA WHERE DATA_SOURCE1= '" + pataAdd + "' AND DATA_DT='" + DateUtils.getDateToString() + "' AND SOURCE_FLAG='A'")){
+                     conn.prepareStatement("DELETE FROM  ETL_WEBSERVICE_DATA WHERE DATA_SOURCE1= '" + pataAdd + "' AND DATA_DT='" + DateUtils.getDateToString() + "' AND SOURCE_FLAG='A' AND COLUMN1 <> '"+ propertiesUtil.readProperty("statinfo") +"'")){
             stat.execute();
         }
     }
@@ -100,7 +103,6 @@ public class HandDateService {
         PropertiesUtil propertiesUtil = new PropertiesUtil("job.properties");
         try (Statement stat =  conn.createStatement()) {
             stat.addBatch("INSERT INTO ETL_WEBSERVICE_DATA VALUES ('"+DateUtils.getDateToString()+"','"+pataAdd+"','','A','0','"+propertiesUtil.readProperty("grpinfo")+"','');");
-            stat.addBatch("INSERT INTO ETL_WEBSERVICE_DATA VALUES ('"+DateUtils.getDateToString()+"','"+pataAdd+"','','A','0','"+propertiesUtil.readProperty("statinfo")+"','');");
             stat.addBatch("INSERT INTO ETL_WEBSERVICE_DATA VALUES ('"+DateUtils.getDateToString()+"','"+pataAdd+"','','A','0','"+propertiesUtil.readProperty("datainfo")+"','');");
             stat.executeBatch();
         }
@@ -117,22 +119,21 @@ public class HandDateService {
         PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
         Connection conn = DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
         List<HandDateInfo> rsList = new ArrayList<HandDateInfo>();
-        String queryStr = "SELECT Id id,PhotoOperationDate photo_Operation_Date,PhotoDate,CreateDate,PhotoStatus,PhotoType FROM etl_photo where DeleteFlag = '0' ";
-        StringBuilder stringBuilder = new StringBuilder(queryStr);
-        if (handDateInfo.getPhotoOperationDate() != null && !"".equals(handDateInfo.getPhotoOperationDate())) {
-            stringBuilder.append("and PhotoOperationDate = '" + handDateInfo.getPhotoOperationDate()).append("'");
+        String queryStr = "SELECT id,photo_operation_date,photo_date,create_date,photo_status,photo_type FROM etl_photo where delete_flag = '0' ";
+        StringBuilder stringBuilder = appendQueryCriteria(handDateInfo, queryStr);
+        String pageParamStr = "";
+        if (handDateInfo.getPage() != null && handDateInfo.getRows() != null) {
+            pageParamStr = " limit " + (handDateInfo.getPage()-1)*handDateInfo.getRows()+","+handDateInfo.getRows();
         }
-        if (handDateInfo.getPhotoDate() != null && !"".equals(handDateInfo.getPhotoDate())) {
-            stringBuilder.append("and PhotoDate = '" + handDateInfo.getPhotoDate()).append("'");
-        }
-        if (handDateInfo.getPhotoStatus() != null && !"".equals(handDateInfo.getPhotoStatus())) {
-            stringBuilder.append("and PhotoStatus = '" + handDateInfo.getPhotoStatus()).append("'");
-        }
+
         try (Statement stat = conn.createStatement();
-             ResultSet rs = stat.executeQuery(stringBuilder.toString())){
+             ResultSet rs = stat.executeQuery(stringBuilder.toString() + pageParamStr)){
             //通过反射给bean赋值
             ResultToBeanUtil<HandDateInfo> handDateInfoResultToBeanUtil = new ResultToBeanUtil<HandDateInfo>();
             rsList = handDateInfoResultToBeanUtil.getList(HandDateInfo.class, rs);
+            if (rsList != null && rsList.size() > 0) {
+                rsList.get(0).setTotal(queryPhotoCount(conn, handDateInfo));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -140,6 +141,52 @@ public class HandDateService {
         }
         return rsList;
     }
+
+    /**
+     * 查询mysql中维护的拍照数据 的总条数
+     * @param handDateInfo
+     * @return
+     * @throws Exception
+     */
+    public Integer queryPhotoCount(Connection conn,HandDateInfo handDateInfo) throws Exception{
+        Integer count = 0;
+        String countStr = "SELECT count(*) total FROM etl_photo where delete_flag = '0' ";
+        StringBuilder stringBuilder = appendQueryCriteria(handDateInfo, countStr);
+        try (Statement stat = conn.createStatement();
+             ResultSet rs = stat.executeQuery(stringBuilder.toString())){
+            if (rs.first()){
+                count = rs.getInt("total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    /**
+     * 拼接查询条件
+     * @param handDateInfo
+     * @param queryStr
+     * @return
+     */
+    private StringBuilder appendQueryCriteria(HandDateInfo handDateInfo,String queryStr) {
+        StringBuilder stringBuilder = new StringBuilder(queryStr);
+        if (handDateInfo.getPhotoOperationDate() != null && !"".equals(handDateInfo.getPhotoOperationDate())) {
+            stringBuilder.append("and photo_operation_date = '" + handDateInfo.getPhotoOperationDate()).append("'");
+        }
+        if (handDateInfo.getPhotoDate() != null && !"".equals(handDateInfo.getPhotoDate())) {
+            stringBuilder.append("and photo_date = '" + handDateInfo.getPhotoDate()).append("'");
+        }
+        if (handDateInfo.getPhotoStatus() != null && !"".equals(handDateInfo.getPhotoStatus())) {
+            stringBuilder.append("and photo_status = '" + handDateInfo.getPhotoStatus()).append("'");
+        }
+        if (handDateInfo.getPhotoType() != null && !"".equals(handDateInfo.getPhotoType())) {
+            stringBuilder.append("and photo_type = '" + handDateInfo.getPhotoType()).append("'");
+        }
+        return stringBuilder;
+    }
+
+
 
     /**
      * 删除拍照信息
@@ -153,7 +200,7 @@ public class HandDateService {
         }
         PropertiesUtil propertiesUtil = new PropertiesUtil("databaseconfig.properties");
         StringBuilder sb = new StringBuilder();
-        String preSql = "update etl_photo set DeleteFlag ='1' WHERE Id in (";
+        String preSql = "update etl_photo set delete_flag ='1' WHERE id in (";
         for (HandDateInfo handDateInfo : handDateInfoList) {
             if (handDateInfo.getId() != null) {
                 sb.append(handDateInfo.getId()).append(",");
@@ -186,7 +233,7 @@ public class HandDateService {
         if (handDateInfoList == null || handDateInfoList.size() == 0) {
             throw new Exception();
         }
-        String insertSql = "insert into etl_photo(PhotoOperationDate,PhotoDate,CreateDate,PhotoStatus,PhotoType,DeleteFlag) values ";
+        String insertSql = "insert into etl_photo(photo_operation_date,photo_date,create_date,photo_status,photo_type,delete_flag) values ";
         StringBuilder sb = new StringBuilder();
         try (Connection conn =
                      DBUtils.getConnection(propertiesUtil.readProperty("mysqlDriver"), propertiesUtil.readProperty("mysqlUrl"), propertiesUtil.readProperty("mysqlUsername"), propertiesUtil.readProperty("mysqlPassword"));
@@ -201,8 +248,8 @@ public class HandDateService {
                     sql = insertSql + sb.toString();
                 } else {
                     //更新
-                    sql = "update etl_photo set PhotoOperationDate = '"+handDateInfo.getPhotoOperationDate()
-                            +"',PhotoDate = '"+ handDateInfo.getPhotoDate() +"' where id = " + handDateInfo.getId();
+                    sql = "update etl_photo set photo_operation_date = '"+handDateInfo.getPhotoOperationDate()
+                            +"',photo_date = '"+ handDateInfo.getPhotoDate() +"' where id = " + handDateInfo.getId();
                 }
                 stat.execute(sql);
             }
@@ -218,10 +265,10 @@ public class HandDateService {
      * @throws Exception
      */
     private void updatePhotoDataStatus (Connection conn, HandDateInfo handDateInfo, String photoType) throws Exception{
-        String sqlStr = "update etl_photo set PhotoStatus = '1' where id = " + handDateInfo.getId();
+        String sqlStr = "update etl_photo set photo_status = '1' where id = " + handDateInfo.getId();
         //如果手动拍照 直接插入一条 已拍照状态 手工拍照状态的数据
         if ("0".equals(photoType)) {
-            sqlStr = "insert into etl_photo(PhotoOperationDate,PhotoDate,CreateDate,PhotoStatus,PhotoType,DeleteFlag) values ('"+ handDateInfo.getPhotoOperationDate() + "','"+
+            sqlStr = "insert into etl_photo(photo_operation_date,photo_date,create_date,photo_status,photo_type,delete_flag) values ('"+ handDateInfo.getPhotoOperationDate() + "','"+
                     handDateInfo.getPhotoDate() + "',NOW(),'1','"+ photoType +"','0')";
         }
         try (Statement stat = conn.createStatement()){
